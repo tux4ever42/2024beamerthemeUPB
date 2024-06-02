@@ -6,4 +6,169 @@
 % This is suggestion for using the Paderborn University corperated design
 % in LaTeX-Beamer. Feel free to optimize this implementation.
 
+\mode<presentation>
 
+% disable navigation symbols
+\setbeamertemplate{navigation symbols}{}
+
+% REQUIREMENTS
+% we use TIKZ for drawing the background network on the slides
+\RequirePackage{tikz}
+\usetikzlibrary{positioning}
+\tikzset{mylinespace/.style={%
+    execute at begin node=\begin{spacing}{#1}\hspace{0pt},%
+    execute at end node=\vspace{-\ht\strutbox}\end{spacing}}}
+
+% we need this packages for importing images and using colors
+% especially in tables
+\RequirePackage{graphicx,xcolor,colortbl,setspace}
+
+
+% change the font size of captions 
+\RequirePackage[font=footnotesize]{caption}
+
+
+% FONT
+% we use Segoe UI as the default font
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{fontspec}
+\setsansfont{Segoe UI}
+
+% COLOR DEFINITION
+% defining the UPB-colors
+\definecolor{upb_ultrablue}{RGB}{0,37,170}
+\definecolor{upb_arcticblue}{RGB}{80,209,209}
+
+% GEOMETRY
+% setting the parskip and the margins
+\parskip=1ex
+\setbeamersize{text margin left=6mm,text margin right=7mm}
+
+
+% LOGO
+\newcommand{\logopath}{abb_theme/UPB_Logo_DE_vierfarbig_RGB.jpg}
+\DeclareOptionBeamer{logogerman}[true]{\renewcommand{\logopath}{abb_theme/UPB_Logo_DE_vierfarbig_RGB.jpg}}
+\DeclareOptionBeamer{logoenglish}[true]{\renewcommand{\logopath}{abb_theme/UPB_Logo_ENG_coloured_RGB.jpg}}
+\ProcessOptionsBeamer
+
+\newcommand{\secondlogopath}{abb_theme/secondlogo.png}
+\newcommand{\secondlogoheight}{1cm}
+\newcounter{usesecondlogo}
+\setcounter{usesecondlogo}{0}
+\DeclareOptionBeamer{secondlogo}[true]{\setcounter{usesecondlogo}{1}}
+%TITLEPAGE
+
+
+% There are currently only one layout to choose from for the title page.
+\newcommand{\titlepagestyle}{default}
+\DeclareOptionBeamer{default}[true]{\renewcommand{\titlepagestyle}{default}}
+\ProcessOptionsBeamer
+
+\newcounter{issectionframe}
+\setcounter{issectionframe}{0}
+
+
+\setbeamertemplate{background}{
+  \begin{tikzpicture}
+  	\ifnum\thepage<2\relax % this is only relevant for the title page
+		\useasboundingbox (0,0) rectangle (\the\paperwidth,\the\paperheight);
+
+		%add the UPB-Logo
+		\node[anchor=north west,inner sep = 0pt] at (.45,\the\paperheight)
+			{\includegraphics[height=1.5cm]{\logopath}};
+
+		\ifnum\theusesecondlogo>0\relax
+			\node[anchor=north west,inner sep = 0pt] at (4.5,\the\paperheight-7)
+				{\includegraphics[height=\secondlogoheight]{\secondlogopath}};
+		\fi
+		
+
+
+		%help lines for alignment
+		%\newcommand{\tmpy}{7}
+		%\draw[red] (0,\the\paperheight-\tmpy) -- (\the\paperwidth,\the\paperheight-\tmpy);
+		%\draw[red] (0,\the\paperheight-\tmpy-28.5) -- (\the\paperwidth,\the\paperheight-\tmpy-28.5);
+		%\newcommand{\tmpx}{1.7}
+		%\draw[red] (\tmpx,\the\paperheight) -- (\tmpx,0);
+
+		\node[anchor=north east, inner sep = 0pt, yshift=-.3cm] at (\the\paperwidth,\the\paperheight)
+			{\includegraphics[height=.96\paperheight]{abb_theme/trianglesupbright.png}};
+
+	\else
+		\ifnum\theissectionframe> 0\relax
+		\useasboundingbox (0,0) rectangle (\the\paperwidth,\the\paperheight);
+
+		%add the UPB-Logo
+		\node[anchor=north west,inner sep = 0pt] at (.48,\the\paperheight)
+			{\includegraphics[height=.9cm]{\logopath}};
+
+		\node[anchor=south west, inner sep = 0pt, yshift=0cm] at (0,0)
+			{\includegraphics[width=\paperwidth]{abb_theme/trianglesupbbottom}};
+
+		\node[anchor=north,inner sep = 4mm, fill = upb_arcticblue, minimum height=2cm, text height=1cm] at (.85\paperwidth,\the\paperheight) {\color{white}\huge\insertframenumber};
+
+		\else
+
+		\useasboundingbox (0,0) rectangle (\the\paperwidth,\the\paperheight);
+
+		%add the UPB-Logo
+		\node[anchor=north west,inner sep = 0pt] at (.48,\the\paperheight)
+			{\includegraphics[height=.9cm]{\logopath}};
+
+		\node[anchor=north east, inner sep = 0pt, yshift=-.3cm] at (\the\paperwidth,\the\paperheight)
+			{\includegraphics[height=.97\paperheight]{abb_theme/trianglesupbtopbottom}};
+		\fi
+
+	\fi
+  \end{tikzpicture}
+}
+
+
+% TEMPLATE FOR THE TITLE PAGE
+\defbeamertemplate*{title page}{upb2024}[1][]{%
+	\begin{tikzpicture}
+		\useasboundingbox (0,0) rectangle (\the\paperwidth,\the\paperheight);
+		\node[anchor=west, upb_ultrablue, inner sep = 0pt, align=left, text width = .75\paperwidth,mylinespace=1.5] (TITLE) at (1, .66\paperheight) {\textbf{\LARGE \inserttitle}};
+
+		\node[black,inner sep = 0pt, text width=.75\paperwidth, below = 3mm of TITLE] (SUBTITLE) {\insertsubtitle};
+
+		\node[anchor=south west, inner sep = 0pt, align=left, text width = .75\paperwidth,mylinespace=.8] (AUTHORDATE) at (1, .7) {\footnotesize \insertauthor\\\insertdate};
+	\end{tikzpicture}
+	%\insertsubtitle
+
+}
+
+
+% TEMPLATE FOR THE FRAME TITLE
+\defbeamertemplate*{frametitle}{upb2024}[1][] {%
+	\vspace{1.1cm}
+	\textbf{\insertframetitle}
+}
+
+% The author and slide numbers are drawn on the foreground layer and thus
+% always lie above all other slide elements.
+\setbeamertemplate{footline}
+{
+	\ifnum\theissectionframe= 0\relax
+	\hspace{6mm} \textbf{\color{upb_ultrablue}|}\hspace{1mm} \insertauthor\ -- \insertshorttitle\ -- \insertdate\ \hfill  \textbf{\footnotesize\insertframenumber} \hspace{.75cm}
+
+	\vspace{.3cm}
+	\fi
+}
+
+
+\makeatletter
+\define@key{beamerframe}{sectionframe}[true]{%
+  \setcounter{issectionframe}{1}
+}
+\makeatother
+
+\AtBeginSection[]{
+  \begin{frame}[sectionframe]
+  \vfill
+  \centering
+	\textbf{\color{upb_ultrablue}\LARGE \insertsectionhead}
+  \vfill
+  \end{frame}
+  \setcounter{issectionframe}{0}
+}
