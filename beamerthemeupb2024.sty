@@ -66,41 +66,43 @@
 \newcommand{\secondlogopath}{abb_theme/secondlogo.png}
 \newcommand{\secondlogoheight}{1cm}
 
-% The counter is used for internal management of whether the option has been selected
-\newcounter{usesecondlogo}
-\setcounter{usesecondlogo}{0}
-\DeclareOptionBeamer{secondlogo}[true]{\setcounter{usesecondlogo}{1}}
+% The condition is used for internal management of whether a second logo is used
+\newif\ifsecondlogo\secondlogofalse
+\DeclareOptionBeamer{secondlogo}[true]{\secondlogotrue}
 
 
 %%%%% Frame Design %%%%%%
 % In addition to the normal standard layout for frames, there are various
-% special layouts. Internally, the following counters are used to manage which
+% special layouts. Internally, the following conditions are used to manage which
 % frame layout is to be used for a specific slide.
 
-% Frame for TOC
-\newcounter{istocframe}
-\setcounter{istocframe}{0}
+\newif\iftocframe\tocframefalse % Frame for TOC
+\newif\ifsectionframe\sectionframefalse % Frame at the beginning of a new section
+\newif\ifthankyouframe\thankyouframefalse % Frame for the last slide
 
-% Frame at the beginning of a new section
-\newcounter{issectionframe}
-\setcounter{issectionframe}{0}
-
-% Frame for the last slide
-\newcounter{isthankyouframe}
-\setcounter{isthankyouframe}{0}
-
+% If the corresponding keyword is called as an option for “\begin{frame}[...]”,
+% the corresponding condition is set to true.
 \makeatletter
+\define@key{beamerframe}{tocframe}[true]{%
+  \tocframetrue
+}
 \define@key{beamerframe}{sectionframe}[true]{%
-  \setcounter{issectionframe}{1}
+  \sectionframetrue
 }
 \define@key{beamerframe}{thankyouframe}[true]{%
-  \setcounter{isthankyouframe}{1}
-}
-\define@key{beamerframe}{tocframe}[true]{%
-  \setcounter{istocframe}{1}
+  \thankyouframetrue
 }
 \makeatother
 
+% At the end of each slide, all conditions are reset to “false”. As the frame
+% environment does not allow any actions at the end by default, some trickery
+% is required.
+\makeatletter
+\patchcmd{\beamer@doseveralframes}% <cmd>
+  {\beamer@reseteecodes}% <search>
+  {\beamer@reseteecodes\tocframefalse\sectionframefalse\thankyouframefalse}% <replace>
+  {}{}% <success><failure>
+\makeatother
 
 %TITLEPAGE
 %There are three layouts to choose from for the title page: "texttitle"
@@ -143,7 +145,7 @@
 				};
 
 			% optional second logo
-			\ifnum\theusesecondlogo>0\relax
+			\ifsecondlogo
 				\node[anchor=north west,inner sep = 0pt]
 					at (4.5,\the\paperheight-7)
 					{%
@@ -163,7 +165,7 @@
 				};
 
 		\else
-		\ifnum\theissectionframe=1\relax %new section-frame
+		\ifsectionframe %new section-frame
 
 			%add the UPB-Logo
 			\node[anchor=north west,inner sep = 0pt]
@@ -194,7 +196,7 @@
 			};
 
 		\else
-		\ifnum\theisthankyouframe>0\relax % last frame
+		\ifthankyouframe % last frame
 			%add the UPB-Logo
 			\node[anchor=north west,inner sep = 0pt]
 				at (.45,\the\paperheight)
@@ -205,7 +207,7 @@
 				};
 
 			% optional second logo
-			\ifnum\theusesecondlogo>0\relax
+			\ifsecondlogo
 			\node[anchor=north west,inner sep = 0pt]
 				at (4.5,\the\paperheight-7)
 				{%
@@ -225,7 +227,7 @@
 				};
 
 		\else
-		\ifnum\theistocframe>0\relax %TOC frame
+		\iftocframe %TOC frame
 			\node[anchor=north east, inner sep = 0pt, yshift=-.3cm]
 				at (\the\paperwidth,\the\paperheight)
 				{%
@@ -301,7 +303,8 @@
 % TEMPLATE FOR THE FRAME TITLE
 \defbeamertemplate*{frametitle}{upb2024}[1][] {%
 	% shifted frame title on the TOC-Frame due to the triangle-layout
-	\ifnum\theistocframe = 1\relax
+	%\ifnum\theistocframe = 1\relax
+	\iftocframe
 		\vspace{1.5cm}
 		\hspace{2.3cm}\textbf{\insertframetitle}
 	\else
@@ -314,18 +317,14 @@
 % This includes resetting the counters for special frames
 \setbeamertemplate{footline}
 {	
-	\ifnum\theisthankyouframe = 1\relax
-		\setcounter{isthankyouframe}{0}
+	\ifthankyouframe
+		%
 	\else
-	\ifnum\theissectionframe = 1 \relax
-		  \setcounter{issectionframe}{0}
+	\ifsectionframe
+		  %
 	\else
 	\hspace{6mm} \textbf{\color{upb_ultrablue}|}\hspace{1mm} \insertauthor\ -- \insertshorttitle\ -- \insertdate\ \hfill  \textbf{\footnotesize\insertframenumber} \hspace{.75cm}
 	\vspace{.3cm}
-
-	\ifnum\theistocframe =1 \relax
-		\setcounter{istocframe}{0}
-	\fi
 	\fi
 	\fi
 }
